@@ -24,7 +24,7 @@ func GetSession(r *http.Request) *Session {
 	}
 
 	session := new(Session)
-	db.First(session, "id = ?", sessionID)
+	db.First(session, Session{ID: sessionID})
 
 	if session.ID == "" {
 		return nil
