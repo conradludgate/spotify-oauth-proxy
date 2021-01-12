@@ -11,8 +11,9 @@ import (
 )
 
 func GetSession(r *http.Request) *Session {
+	log.Println(r.Cookies())
+
 	cookie, err := r.Cookie("SESSION_ID")
-	log.Println(cookie, err)
 	if err != nil {
 		return nil
 	}

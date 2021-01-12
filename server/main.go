@@ -69,28 +69,28 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 
 	token, err := oauth.Exchange(r.Context(), code)
 	if err != nil {
-		fmt.Fprintln(w, "Could not complete authorization: invalid code")
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintln(w, "Could not complete authorization: invalid code")
 		return
 	}
 
 	req, err := http.NewRequest("GET", "https://api.spotify.com/v1/me", nil)
 	if err != nil {
-		fmt.Fprintln(w, "Could not complete authorization: could not connect to spotify")
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "Could not complete authorization: could not connect to spotify")
 		return
 	}
 	token.SetAuthHeader(req)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		return
 	}
 
@@ -98,8 +98,8 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 		ID string `json:"id"`
 	})
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil || data.ID == "" {
-		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "Could not complete authorization: invalid response from spotify")
 		return
 	}
 
