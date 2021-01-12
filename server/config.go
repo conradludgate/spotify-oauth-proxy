@@ -21,7 +21,7 @@ var config *Config
 
 func init() {
 	config = new(Config)
-	if err := env.Parse(&config); err != nil {
+	if err := env.Parse(config); err != nil {
 		panic(err)
 	}
 }
