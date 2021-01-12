@@ -15,12 +15,8 @@ func GetSession(r *http.Request) *Session {
 		return nil
 	}
 
-	i := strings.Index(cookie.Value, "|")
-	if i == -1 {
-		return nil
-	}
-	sessionID := cookie.Value[:i]
-	if !ValidSessionID(sessionID, cookie.Value[i:]) {
+	sessionID, ok := ValidSessionID(cookie.Value)
+	if !ok {
 		return nil
 	}
 
@@ -36,13 +32,19 @@ func GetSession(r *http.Request) *Session {
 func SignSessionID(sessionID string) string {
 	return sessionID + "|" + base64.RawStdEncoding.EncodeToString(Sign(sessionID))
 }
-func ValidSessionID(sessionID, mac string) bool {
-	got, err := base64.RawURLEncoding.DecodeString(mac)
-	if err != nil {
-		return false
+func ValidSessionID(signedSessionID string) (string, bool) {
+	i := strings.Index(signedSessionID, "|")
+	if i == -1 {
+		return "", false
 	}
 
-	return hmac.Equal(got, Sign(sessionID))
+	sessionID := signedSessionID[:i]
+	got, err := base64.RawURLEncoding.DecodeString(signedSessionID[i:])
+	if err != nil {
+		return "", false
+	}
+
+	return sessionID, hmac.Equal(got, Sign(sessionID))
 }
 func Sign(s string) []byte {
 	mac := hmac.New(sha256.New, []byte(config.SessionKey))

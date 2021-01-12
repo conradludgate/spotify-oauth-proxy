@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"golang.org/x/oauth2"
 	oauthSpotify "golang.org/x/oauth2/spotify"
@@ -18,6 +17,7 @@ var (
 )
 
 func main() {
+	ConnectDB()
 	defer db.Close()
 
 	oauth = &oauth2.Config{
@@ -60,15 +60,8 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	state := r.FormValue("state")
-	i := strings.Index(state, "|")
-	if i == -1 {
-		fmt.Fprintln(w, "Could not complete authorization: invalid state")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	sessionID := state[:i]
-	if !ValidSessionID(sessionID, state[i:]) {
+	sessionID, ok := ValidSessionID(r.FormValue("state"))
+	if !ok {
 		fmt.Fprintln(w, "Could not complete authorization: invalid state")
 		w.WriteHeader(http.StatusUnauthorized)
 		return

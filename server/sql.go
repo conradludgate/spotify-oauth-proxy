@@ -12,7 +12,7 @@ import (
 
 var db *gorm.DB
 
-func init() {
+func ConnectDB() {
 	var err error
 	db, err = gorm.Open("postgres", config.Database)
 	if err != nil {
