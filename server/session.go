@@ -25,7 +25,7 @@ func SetSessionCookie(w http.ResponseWriter, sessionID string) {
 	})
 }
 
-func GetSession(r *http.Request) *Session {
+func GetSession(r *http.Request) *User {
 	log.Println(r.Cookies())
 
 	cookie, err := r.Cookie(SessionCookie)
@@ -45,11 +45,17 @@ func GetSession(r *http.Request) *Session {
 
 	session := new(Session)
 	db.First(session, Session{ID: sessionID})
-
-	if session.ID == "" {
+	if session.UserID == "" {
 		return nil
 	}
-	return session
+
+	user := new(User)
+	db.First(user, User{ID: session.UserID})
+	if user.ID == "" {
+		return nil
+	}
+
+	return user
 }
 
 func SignSessionID(sessionID string) string {

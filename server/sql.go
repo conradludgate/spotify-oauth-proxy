@@ -43,6 +43,7 @@ type User struct {
 type Token struct {
 	ID         string
 	APIKeyHash []byte
+	Name       string
 
 	AccessToken  string
 	RefreshToken string

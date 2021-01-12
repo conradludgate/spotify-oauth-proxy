@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create a new token | Spotify Oauth Proxy</title>
+</head>
+<body>
+    <form action="/api/new" method="post">
+        <label for="name">Token name:</label><br>
+        <input type="text" id="name" name="name"><br>
+
+        <label>Scopes:</label><br>
+        <ul>{{ range . }}
+            <li>
+                <label for="{{ . }}">{{ . }}:</label><input type="checkbox" id="{{ . }}" name="{{ . }}" value="{{ . }}">
+            </li>
+        {{ end }}</ul>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

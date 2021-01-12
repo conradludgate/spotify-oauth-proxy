@@ -36,10 +36,12 @@ func main() {
 	}
 	domain = redirect.Hostname()
 
-	http.Handle("/", http.FileServer(http.Dir(config.FrontendDir)))
+	RegisterFrontend()
+
 	http.HandleFunc("/api/data", Data)
 	http.HandleFunc("/api/login", Login)
 	http.HandleFunc("/api/spotify_callback", SpotifyCallback)
+	http.HandleFunc("/api/new", NewToken)
 
 	log.Fatal(http.ListenAndServe(":27228", nil))
 }
@@ -140,11 +142,15 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func Data(w http.ResponseWriter, r *http.Request) {
-	session := GetSession(r)
-	if session == nil {
+	user := GetSession(r)
+	if user == nil {
 		http.Redirect(w, r, "/api/login", http.StatusSeeOther)
 		return
 	}
 
-	fmt.Fprintln(w, session.UserID)
+	fmt.Fprintln(w, user.ID)
+}
+
+func NewToken(w http.ResponseWriter, r *http.Request) {
+
 }

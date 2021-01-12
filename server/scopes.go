@@ -1,4 +1,4 @@
-package spotifyapi
+package main
 
 var Scopes = []string{
 	"ugc-image-upload",
