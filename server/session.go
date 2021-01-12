@@ -7,18 +7,37 @@ import (
 	"encoding/base64"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
+
+const SessionCookie = "SESSION_ID"
+
+func SetSessionCookie(w http.ResponseWriter, sessionID string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     SessionCookie,
+		Value:    url.PathEscape(SignSessionID(sessionID)),
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+	})
+}
 
 func GetSession(r *http.Request) *Session {
 	log.Println(r.Cookies())
 
-	cookie, err := r.Cookie("SESSION_ID")
+	cookie, err := r.Cookie(SessionCookie)
 	if err != nil {
 		return nil
 	}
 
-	sessionID, ok := ValidSessionID(cookie.Value)
+	signed, err := url.PathUnescape(cookie.Value)
+	if err != nil {
+		return nil
+	}
+
+	sessionID, ok := ValidSessionID(signed)
 	if !ok {
 		return nil
 	}
@@ -33,10 +52,10 @@ func GetSession(r *http.Request) *Session {
 }
 
 func SignSessionID(sessionID string) string {
-	return sessionID + "+" + base64.RawURLEncoding.EncodeToString(Sign(sessionID))
+	return sessionID + "|" + base64.RawURLEncoding.EncodeToString(Sign(sessionID))
 }
 func ValidSessionID(signedSessionID string) (string, bool) {
-	i := strings.Index(signedSessionID, "+")
+	i := strings.Index(signedSessionID, "|")
 	if i == -1 {
 		return "", false
 	}
