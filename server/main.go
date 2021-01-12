@@ -109,7 +109,7 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 	db.Delete(Session{
 		UserID: user.ID,
 	})
-	db.Create(Session{
+	db.Create(&Session{
 		ID:     sessionID,
 		UserID: user.ID,
 
