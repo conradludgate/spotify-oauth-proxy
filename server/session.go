@@ -5,12 +5,14 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"log"
 	"net/http"
 	"strings"
 )
 
 func GetSession(r *http.Request) *Session {
 	cookie, err := r.Cookie("SESSION_ID")
+	log.Println(cookie, err)
 	if err != nil {
 		return nil
 	}

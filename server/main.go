@@ -118,6 +118,15 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 		TokenType:    token.TokenType,
 		Expires:      token.Expiry,
 	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "SESSION_ID",
+		Value:    sessionID,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   true,
+	})
+
+	http.Redirect(w, r, "/api/data", http.StatusSeeOther)
 }
 
 func Data(w http.ResponseWriter, r *http.Request) {
