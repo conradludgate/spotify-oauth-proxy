@@ -1,6 +1,6 @@
 FROM golang:1.15.6-alpine3.12 AS builder
 
-WORKDIR /go/src/github.com/conradludgate/spotify-api
+WORKDIR /go/src/github.com/conradludgate/spotify-oauth-proxy
 ADD go.* ./
 RUN go mod download
 ADD *.go ./
@@ -11,5 +11,5 @@ FROM alpine:3.12
 
 WORKDIR /home/spotify-proxy
 ADD client client
-COPY --from=builder /go/src/github.com/conradludgate/spotify-api/build spotify-proxy
-ENTRYPOINT [ "spotify-proxy" ]
+COPY --from=builder /go/src/github.com/conradludgate/spotify-oauth-proxy/build spotify-oauth-proxy
+ENTRYPOINT [ "spotify-oauth-proxy" ]

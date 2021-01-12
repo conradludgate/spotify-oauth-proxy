@@ -1,4 +1,4 @@
-module github.com/conradludgate/spotify-api
+module github.com/conradludgate/spotify-oauth-proxy
 
 go 1.15
 

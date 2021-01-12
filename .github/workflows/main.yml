@@ -13,7 +13,7 @@ jobs:
     - name: Checkout main
       uses: actions/checkout@v2
 
-    - name: Build PostgreSQL container image
+    - name: Build container image
       run: |
         docker build \
         --tag ghcr.io/$GITHUB_ACTOR/spotify-oauth-proxy:$(echo $GITHUB_SHA | head -c7) \
