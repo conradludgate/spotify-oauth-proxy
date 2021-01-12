@@ -129,7 +129,14 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 
 	SetSessionCookie(w, sessionID)
 
-	http.Redirect(w, r, "/api/data", http.StatusSeeOther)
+	// http.Redirect(w, r, "/api/data", http.StatusSeeOther)
+	fmt.Fprintln(w, `<!DOCTYPE html>
+<html>
+<body>
+<script>window.location.replace("/api/data");</script>
+<noscript><a href="/api/data">Complete login</a></noscript>
+</body>
+</hmtl>`)
 }
 
 func Data(w http.ResponseWriter, r *http.Request) {
