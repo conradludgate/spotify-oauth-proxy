@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 
 	"golang.org/x/oauth2"
 	oauthSpotify "golang.org/x/oauth2/spotify"
@@ -13,7 +14,8 @@ import (
 const id = "SpotifyAuthProxy"
 
 var (
-	oauth *oauth2.Config
+	oauth  *oauth2.Config
+	domain string
 )
 
 func main() {
@@ -27,6 +29,12 @@ func main() {
 		Endpoint:     oauthSpotify.Endpoint,
 		Scopes:       []string{"user-read-private"},
 	}
+
+	redirect, err := url.Parse(config.ClientRedirectURL)
+	if err != nil {
+		panic(err)
+	}
+	domain = redirect.Hostname()
 
 	http.Handle("/", http.FileServer(http.Dir(config.FrontendDir)))
 	http.HandleFunc("/api/data", Data)
@@ -119,14 +127,7 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 		Expires:      token.Expiry,
 	})
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "SESSION_ID",
-		Value:    SignSessionID(sessionID),
-		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-	})
+	SetSessionCookie(w, sessionID)
 
 	http.Redirect(w, r, "/api/data", http.StatusSeeOther)
 }

@@ -18,6 +18,7 @@ func SetSessionCookie(w http.ResponseWriter, sessionID string) {
 		Name:     SessionCookie,
 		Value:    url.PathEscape(SignSessionID(sessionID)),
 		SameSite: http.SameSiteStrictMode,
+		Domain:   domain,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
