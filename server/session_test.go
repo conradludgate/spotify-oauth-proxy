@@ -7,10 +7,11 @@ import (
 )
 
 func TestSignSession(t *testing.T) {
+	config.SessionKey = "helloworld"
 	sessionID := "foobarbaz"
 	signed := SignSessionID(sessionID)
 
 	sID, ok := ValidSessionID(signed)
-	assert.Equal(t, sessionID, sID)
 	assert.True(t, ok)
+	assert.Equal(t, sessionID, sID)
 }

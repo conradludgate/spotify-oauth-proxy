@@ -39,7 +39,7 @@ func ValidSessionID(signedSessionID string) (string, bool) {
 	}
 
 	sessionID := signedSessionID[:i]
-	got, err := base64.RawURLEncoding.DecodeString(signedSessionID[i:])
+	got, err := base64.RawURLEncoding.DecodeString(signedSessionID[i+1:])
 	if err != nil {
 		return "", false
 	}
