@@ -30,7 +30,7 @@ func GetSession(r *http.Request) *Session {
 }
 
 func SignSessionID(sessionID string) string {
-	return sessionID + "|" + base64.RawStdEncoding.EncodeToString(Sign(sessionID))
+	return sessionID + "|" + base64.RawURLEncoding.EncodeToString(Sign(sessionID))
 }
 func ValidSessionID(signedSessionID string) (string, bool) {
 	i := strings.Index(signedSessionID, "|")
