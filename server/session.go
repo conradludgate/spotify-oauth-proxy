@@ -34,15 +34,20 @@ func GetSession(r *http.Request) *Session {
 }
 
 func SignSessionID(sessionID string) string {
-	return sessionID + "|" + Sign(sessionID)
+	return sessionID + "|" + base64.RawStdEncoding.EncodeToString(Sign(sessionID))
 }
 func ValidSessionID(sessionID, mac string) bool {
-	return hmac.Equal([]byte(mac), []byte(Sign(sessionID)))
+	got, err := base64.RawURLEncoding.DecodeString(mac)
+	if err != nil {
+		return false
+	}
+
+	return hmac.Equal(got, Sign(sessionID))
 }
-func Sign(s string) string {
+func Sign(s string) []byte {
 	mac := hmac.New(sha256.New, []byte(config.SessionKey))
 	mac.Write([]byte(s))
-	return string(mac.Sum(nil))
+	return mac.Sum(nil)
 }
 
 // RandomString returns a length 64 base 64 string
