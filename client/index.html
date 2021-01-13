@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Spotify Oauth Proxy</title>
-</head>
-<body>
-    <ul>{{ range .Tokens }}
-        <li><a href="/token?id={{ .ID }}">View token {{ .Name }}</a></li>
-    {{ end }}</ul>
+  </head>
+  <body>
+    <ul>
+      {{ range .Tokens }}
+      <li><a href="/token?id={{ .ID }}">View token {{ .Name }}</a></li>
+      {{ end }}
+    </ul>
     <a href="/new">Create a new token</a>
-</body>
+  </body>
 </html>

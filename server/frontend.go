@@ -1,52 +1,32 @@
 package main
 
 import (
-	"html/template"
 	"net/http"
-	"path/filepath"
+
+	"github.com/gin-gonic/gin"
 )
 
-var tmpl *template.Template
+func RegisterFrontend(r gin.IRouter) {
 
-func ParseTemplates() {
-	var err error
-	tmpl, err = template.ParseGlob(filepath.Join(config.FrontendDir, "*.html"))
-	if err != nil {
-		panic(err)
-	}
+	auth := r.Group("/", Authenticated)
+	auth.GET("/home", Home)
+	auth.GET("/new", NewTokenPage)
+	auth.GET("/token/:id", TokenPage)
+	auth.POST("/token", NewToken)
 }
 
-func RegisterFrontend() {
-	ParseTemplates()
-	http.HandleFunc("/", Home)
-	http.HandleFunc("/new", NewTokenPage)
-	http.HandleFunc("/token", TokenPage)
+func Home(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", c.MustGet("user"))
 }
 
-func Home(w http.ResponseWriter, r *http.Request) {
-	user := GetSession(r)
-	if user == nil {
-		http.Redirect(w, r, "/api/login", http.StatusSeeOther)
-		return
-	}
-
-	tmpl.ExecuteTemplate(w, "index.html", user)
+func NewTokenPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "new_token.html", Scopes)
 }
 
-func NewTokenPage(w http.ResponseWriter, r *http.Request) {
-	session := GetSession(r)
-	if session == nil {
-		http.Redirect(w, r, "/api/login", http.StatusSeeOther)
-		return
-	}
+func TokenPage(c *gin.Context) {
 
-	tmpl.ExecuteTemplate(w, "new_token.html", Scopes)
 }
 
-func TokenPage(w http.ResponseWriter, r *http.Request) {
-	session := GetSession(r)
-	if session == nil {
-		http.Redirect(w, r, "/api/login", http.StatusSeeOther)
-		return
-	}
+func NewToken(c *gin.Context) {
+
 }
