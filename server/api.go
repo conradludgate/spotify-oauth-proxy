@@ -32,28 +32,24 @@ func OauthClient(scopes ...string) *oauth2.Config {
 func GetToken(c *gin.Context) {
 	tokenID, apiKey, ok := c.Request.BasicAuth()
 	if !ok {
-		c.String(http.StatusUnauthorized, "request must have basic auth")
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "request must have basic auth"})
 		return
 	}
 
 	token := new(Token)
 	db.First(token, Token{ID: tokenID})
 	if token.ID == "" {
-		c.String(http.StatusUnauthorized, "invalid auth")
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid auth"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword(token.APIKeyHash, []byte(apiKey)); err != nil {
 		c.Error(err)
-		c.String(http.StatusUnauthorized, "invalid auth")
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid auth"})
 		return
 	}
 
-	oauthToken := token.IntoOauth()
-	c.String(http.StatusOK, oauthToken.Type()+" "+oauthToken.AccessToken)
+	c.JSON(http.StatusOK, token.IntoOauth())
 }
 
 func Login(c *gin.Context) {
