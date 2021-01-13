@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -73,7 +74,7 @@ func NewToken(c *gin.Context) {
 			ID:     id,
 			Name:   name,
 			UserID: user.ID,
-			Scopes: scopes,
+			Scopes: strings.Join(scopes, ","),
 		})
 	} else {
 		id = token.ID

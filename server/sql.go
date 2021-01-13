@@ -48,7 +48,7 @@ type Token struct {
 	RefreshToken string
 	Expires      time.Time
 	TokenType    string
-	Scopes       []string
+	Scopes       string
 
 	UserID string
 }
