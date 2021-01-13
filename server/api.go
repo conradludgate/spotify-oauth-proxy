@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,13 +27,15 @@ func Login(c *gin.Context) {
 func PostLogin(c *gin.Context, code, sessionID string) {
 	token, err := OauthClient().Exchange(c, code)
 	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: invalid code"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: invalid code")
+		c.Abort()
 		return
 	}
 
-	id, err := GetSpotifyID(token)
+	id, err := GetSpotifyID(c, token)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.String(http.StatusInternalServerError, err.Error())
+		c.Abort()
 		return
 	}
 
@@ -67,20 +67,25 @@ func CreateToken(c *gin.Context, code, tokenID string) {
 	token := new(Token)
 	db.Find(token, Token{ID: tokenID})
 	if token.ID == "" {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: invalid state"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: invalid state")
+		c.Abort()
 		return
 	}
 
 	oauthToken, err := OauthClient().Exchange(c, code)
 	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: invalid code"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: invalid code")
+		c.Error(err)
+		c.Abort()
 		return
 	}
 
 	apiKey := RandomString()
 	hash, err := bcrypt.GenerateFromPassword([]byte(apiKey), config.HashCost)
 	if err != nil {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: something went wrong creating the token"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: something went wrong creating the token")
+		c.Error(err)
+		c.Abort()
 		return
 	}
 
@@ -100,19 +105,22 @@ func CreateToken(c *gin.Context, code, tokenID string) {
 
 func SpotifyCallback(c *gin.Context) {
 	if err := c.Query("error"); err != "" {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Could not complete authorization: %s", err))
+		c.String(http.StatusBadRequest, "Could not complete authorization: %s", err)
+		c.Abort()
 		return
 	}
 
 	code := c.Query("code")
 	if code == "" {
-		c.AbortWithError(http.StatusBadRequest, errors.New("Could not complete authorization: no auth code present"))
+		c.String(http.StatusBadRequest, "Could not complete authorization: no auth code present")
+		c.Abort()
 		return
 	}
 
 	name, value, ok := ValidSignature(c.Query("state"))
 	if !ok {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: invalid state"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: invalid state")
+		c.Abort()
 		return
 	}
 
@@ -122,7 +130,8 @@ func SpotifyCallback(c *gin.Context) {
 	case "token":
 		CreateToken(c, code, value)
 	default:
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Could not complete authorization: invalid state"))
+		c.String(http.StatusUnauthorized, "Could not complete authorization: invalid state")
+		c.Abort()
 		return
 	}
 }

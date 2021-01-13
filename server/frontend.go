@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +30,8 @@ func TokenPage(c *gin.Context) {
 	token := new(Token)
 	db.Find(token, Token{ID: c.Param("id"), UserID: user.ID})
 	if token.ID == "" {
-		c.AbortWithError(http.StatusNotFound, errors.New("token now found"))
+		c.String(http.StatusNotFound, "token not found")
+		c.Abort()
 		return
 	}
 
@@ -44,11 +44,13 @@ func TokenPage(c *gin.Context) {
 func NewToken(c *gin.Context) {
 	name, ok := c.GetPostForm("name")
 	if !ok {
-		c.AbortWithError(http.StatusBadRequest, errors.New("token must have a name"))
+		c.String(http.StatusBadRequest, "token must have a name")
+		c.Abort()
 	}
 	scopes, ok := c.GetPostFormArray("scopes")
 	if !ok {
-		c.AbortWithError(http.StatusBadRequest, errors.New("token must have a list of scopes"))
+		c.String(http.StatusBadRequest, "token must have a list of scopes")
+		c.Abort()
 	}
 
 	oauth := &oauth2.Config{
@@ -69,7 +71,8 @@ func NewToken(c *gin.Context) {
 
 	// If the token has an api key, then it's already taken
 	if len(token.APIKeyHash) > 0 {
-		c.AbortWithError(http.StatusBadRequest, errors.New("name already taken"))
+		c.String(http.StatusBadRequest, "name already taken")
+		c.Abort()
 	}
 
 	id := uuid.New().String()
@@ -83,6 +86,6 @@ func NewToken(c *gin.Context) {
 		id = token.ID
 	}
 
-	state := NewSignature(name, id)
+	state := NewSignature("token", id)
 	c.Redirect(http.StatusSeeOther, oauth.AuthCodeURL(state))
 }
