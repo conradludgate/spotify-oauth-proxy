@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,14 +36,6 @@ func GetToken(c *gin.Context) {
 		return
 	}
 
-	apiKeyBytes, err := base64.StdEncoding.DecodeString(apiKey)
-	if err != nil {
-		c.Error(err)
-		c.String(http.StatusUnauthorized, "invalid auth")
-		c.Abort()
-		return
-	}
-
 	token := new(Token)
 	db.First(token, Token{ID: tokenID})
 	if token.ID == "" {
@@ -53,7 +44,7 @@ func GetToken(c *gin.Context) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword(token.APIKeyHash, apiKeyBytes); err != nil {
+	if err := bcrypt.CompareHashAndPassword(token.APIKeyHash, []byte(apiKey)); err != nil {
 		c.Error(err)
 		c.String(http.StatusUnauthorized, "invalid auth")
 		c.Abort()
