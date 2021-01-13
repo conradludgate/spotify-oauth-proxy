@@ -6,7 +6,7 @@
   <body>
     <ul>
       {{ range .Tokens }}
-      <li><a href="/token/{{ .ID }}">View token {{ .Name }}</a></li>
+      <li><a href="/token/id/{{ .ID }}">View token {{ .Name }}</a></li>
       {{ end }}
     </ul>
     <a href="/token/new">Create a new token</a>
