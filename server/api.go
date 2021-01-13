@@ -34,12 +34,15 @@ func GetToken(c *gin.Context) {
 	if !ok {
 		c.String(http.StatusUnauthorized, "request must have basic auth")
 		c.Abort()
+		return
 	}
 
 	apiKeyBytes, err := base64.StdEncoding.DecodeString(apiKey)
 	if err != nil {
+		c.Error(err)
 		c.String(http.StatusUnauthorized, "invalid auth")
 		c.Abort()
+		return
 	}
 
 	token := new(Token)
@@ -47,11 +50,14 @@ func GetToken(c *gin.Context) {
 	if token.ID == "" {
 		c.String(http.StatusUnauthorized, "invalid auth")
 		c.Abort()
+		return
 	}
 
-	if bcrypt.CompareHashAndPassword(token.APIKeyHash, apiKeyBytes) != nil {
+	if err := bcrypt.CompareHashAndPassword(token.APIKeyHash, apiKeyBytes); err != nil {
+		c.Error(err)
 		c.String(http.StatusUnauthorized, "invalid auth")
 		c.Abort()
+		return
 	}
 
 	oauthToken := token.IntoOauth()
@@ -133,9 +139,10 @@ func CreateToken(c *gin.Context, code, tokenID string) {
 	db.Save(token)
 
 	c.HTML(http.StatusOK, "token.html", gin.H{
-		"name": token.Name,
-		"id":   token.ID,
-		"key":  apiKey,
+		"Name":   token.Name,
+		"ID":     token.ID,
+		"APIKey": apiKey,
+		"Scopes": token.Scopes,
 	})
 }
 

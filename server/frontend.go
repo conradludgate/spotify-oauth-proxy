@@ -13,8 +13,8 @@ func RegisterFrontend(r gin.IRouter) {
 	auth.GET("/home", Home)
 	auth.GET("/token/new", NewTokenPage)
 	auth.GET("/token/id/:id", TokenPage)
-	auth.PATCH("/token/id/:id", RefreshTokenAPIKey)
-	auth.DELETE("/token/id/:id", DeleteToken)
+	auth.POST("/token/id/:id/revoke", RefreshTokenAPIKey)
+	auth.POST("/token/id/:id/delete", DeleteToken)
 	auth.POST("/token/", NewToken)
 }
 
@@ -38,10 +38,7 @@ func TokenPage(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "token.html", gin.H{
-		"name": token.Name,
-		"id":   token.ID,
-	})
+	c.HTML(http.StatusOK, "token.html", token)
 }
 
 func NewToken(c *gin.Context) {
@@ -76,6 +73,7 @@ func NewToken(c *gin.Context) {
 			ID:     id,
 			Name:   name,
 			UserID: user.ID,
+			Scopes: scopes,
 		})
 	} else {
 		id = token.ID
@@ -112,9 +110,10 @@ func RefreshTokenAPIKey(c *gin.Context) {
 	db.Save(token)
 
 	c.HTML(http.StatusOK, "token.html", gin.H{
-		"name": token.Name,
-		"id":   token.ID,
-		"key":  apiKey,
+		"Name":   token.Name,
+		"ID":     token.ID,
+		"APIKey": apiKey,
+		"Scopes": token.Scopes,
 	})
 }
 
@@ -125,4 +124,6 @@ func DeleteToken(c *gin.Context) {
 		UserID: user.ID,
 		ID:     c.Param("id"),
 	})
+
+	c.Redirect(http.StatusSeeOther, "/home")
 }
