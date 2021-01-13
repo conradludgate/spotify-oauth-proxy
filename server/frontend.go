@@ -7,16 +7,15 @@ import (
 )
 
 func RegisterFrontend(r gin.IRouter) {
-
 	auth := r.Group("/", Authenticated)
 	auth.GET("/home", Home)
-	auth.GET("/new", NewTokenPage)
+	auth.GET("/token/new", NewTokenPage)
 	auth.GET("/token/:id", TokenPage)
-	auth.POST("/token", NewToken)
+	auth.POST("/token/", NewToken)
 }
 
 func Home(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", c.MustGet("user"))
+	c.HTML(http.StatusOK, "home.html", c.MustGet("user"))
 }
 
 func NewTokenPage(c *gin.Context) {

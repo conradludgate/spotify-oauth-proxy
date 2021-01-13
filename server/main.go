@@ -6,12 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const id = "SpotifyAuthProxy"
-
-var (
-	domain string
-)
-
 func main() {
 	ConnectDB()
 	defer db.Close()

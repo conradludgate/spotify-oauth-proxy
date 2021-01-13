@@ -94,7 +94,7 @@ func SpotifyCallback(c *gin.Context) {
 	SetSessionCookie(c, sessionID)
 
 	c.HTML(http.StatusOK, "redirect.html", gin.H{
-		"path": "/api/data",
+		"path": "/home",
 		"text": "Complete Login",
 	})
 }

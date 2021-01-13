@@ -30,6 +30,7 @@ func Authenticated(c *gin.Context) {
 	user := GetUserFromSession(c)
 	if user == nil {
 		c.Redirect(http.StatusSeeOther, "/")
+		c.Abort()
 		return
 	}
 	c.Set("user", user)
