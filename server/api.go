@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -130,10 +131,10 @@ func CreateToken(c *gin.Context, code, tokenID string) {
 	db.Save(token)
 
 	c.HTML(http.StatusOK, "token.html", gin.H{
-		"Name":   token.Name,
-		"ID":     token.ID,
-		"APIKey": apiKey,
-		"Scopes": token.Scopes,
+		"name":   token.Name,
+		"id":     token.ID,
+		"apiKey": apiKey,
+		"scopes": strings.Split(token.Scopes, ","),
 	})
 }
 

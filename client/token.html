@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Token {{ .Name }} | Spotify Oauth Proxy</title>
+    <title>Token {{ .name }} | Spotify Oauth Proxy</title>
   </head>
   <body>
-    <p>Token {{ .Name }}</p>
+    <p>Token {{ .name }}</p>
 
     <p>This token has access to the following scopes</p>
     <ul>
-      {{ range .Scopes | split }}
+      {{ range .scopes }}
       <li>{{ . }}</li>
       {{ end }}
     </ul>
 
-    <form method="POST" action="/token/id/{{ .ID }}/delete">
+    <form method="POST" action="/token/id/{{ .id }}/delete">
       <input type="submit" value="Delete Token" />
     </form>
-    {{ if .APIKey }}
-    <p>Your API Key is {{ .APIKey }}</p>
+    {{ if .apiKey }}
+    <p>Your API Key is {{ .apiKey }}</p>
     <p>Make a copy of it because you won't see it again</p>
     <script>
-      window.history.replaceState(null, "", "/token/id/{{ .ID }}");
+      window.history.replaceState(null, "", "/token/id/{{ .id }}");
     </script>
     {{ else }}
-    <form method="POST" action="/token/id/{{ .ID }}/revoke">
+    <form method="POST" action="/token/id/{{ .id }}/revoke">
       <input type="submit" value="Revoke API Key" />
     </form>
     {{ end }}

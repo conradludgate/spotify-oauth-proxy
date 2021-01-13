@@ -39,7 +39,11 @@ func TokenPage(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "token.html", token)
+	c.HTML(http.StatusOK, "token.html", gin.H{
+		"name":   token.Name,
+		"id":     token.ID,
+		"scopes": strings.Split(token.Scopes, ","),
+	})
 }
 
 func NewToken(c *gin.Context) {
@@ -111,10 +115,10 @@ func RefreshTokenAPIKey(c *gin.Context) {
 	db.Save(token)
 
 	c.HTML(http.StatusOK, "token.html", gin.H{
-		"Name":   token.Name,
-		"ID":     token.ID,
-		"APIKey": apiKey,
-		"Scopes": token.Scopes,
+		"name":   token.Name,
+		"id":     token.ID,
+		"apiKey": apiKey,
+		"scopes": strings.Split(token.Scopes, ","),
 	})
 }
 
