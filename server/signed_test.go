@@ -9,9 +9,10 @@ import (
 func TestSignSession(t *testing.T) {
 	config.SessionKey = "helloworld"
 	sessionID := "foobarbaz"
-	signed := SignSessionID(sessionID)
+	signed := NewSignature("login", sessionID)
 
-	sID, ok := ValidSessionID(signed)
+	name, sID, ok := ValidSignature(signed)
 	assert.True(t, ok)
 	assert.Equal(t, sessionID, sID)
+	assert.Equal(t, "login", name)
 }

@@ -15,6 +15,7 @@ type Config struct {
 	Database string `env:"SPOTIFY_API_DB_CONN"`
 
 	SessionKey string `env:"SPOTIFY_API_SESSION_KEY"`
+	HashCost   int    `env:"SPOTIFY_API_HASH_COST" envDefault:"10"`
 }
 
 var config *Config
