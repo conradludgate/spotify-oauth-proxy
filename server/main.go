@@ -10,14 +10,15 @@ func main() {
 	ConnectDB()
 	defer db.Close()
 
+	// RefreshJob()
+
 	r := gin.Default()
 	r.LoadHTMLGlob(filepath.Join(config.FrontendDir, "*.html"))
 
 	RegisterFrontend(r)
+	RegisterAPI(r.Group("/api"))
 
-	// http.HandleFunc("/api/data", Data)
-	r.GET("/api/login", Login)
-	r.GET("/api/spotify_callback", SpotifyCallback)
+	r.StaticFile("/", filepath.Join(config.FrontendDir, "index.html"))
 
 	r.Run(":27228")
 }

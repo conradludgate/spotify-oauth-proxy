@@ -5,8 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"golang.org/x/oauth2"
-	oauthSpotify "golang.org/x/oauth2/spotify"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func RegisterFrontend(r gin.IRouter) {
@@ -14,11 +13,15 @@ func RegisterFrontend(r gin.IRouter) {
 	auth.GET("/home", Home)
 	auth.GET("/token/new", NewTokenPage)
 	auth.GET("/token/id/:id", TokenPage)
+	auth.PATCH("/token/id/:id", RefreshTokenAPIKey)
+	auth.DELETE("/token/id/:id", DeleteToken)
 	auth.POST("/token/", NewToken)
 }
 
 func Home(c *gin.Context) {
-	c.HTML(http.StatusOK, "home.html", c.MustGet("user"))
+	user := c.MustGet("user").(*User)
+	db.Model(user).Related(&user.Tokens)
+	c.HTML(http.StatusOK, "home.html", user)
 }
 
 func NewTokenPage(c *gin.Context) {
@@ -53,14 +56,6 @@ func NewToken(c *gin.Context) {
 		c.Abort()
 	}
 
-	oauth := &oauth2.Config{
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
-		RedirectURL:  config.ClientRedirectURL,
-		Endpoint:     oauthSpotify.Endpoint,
-		Scopes:       scopes,
-	}
-
 	user := c.MustGet("user").(*User)
 
 	token := new(Token)
@@ -87,5 +82,47 @@ func NewToken(c *gin.Context) {
 	}
 
 	state := NewSignature("token", id)
-	c.Redirect(http.StatusSeeOther, oauth.AuthCodeURL(state))
+	c.Redirect(http.StatusSeeOther, OauthClient(scopes...).AuthCodeURL(state))
+}
+
+func RefreshTokenAPIKey(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+
+	token := new(Token)
+	db.Find(token, Token{
+		UserID: user.ID,
+		ID:     c.Param("id"),
+	})
+
+	if len(token.APIKeyHash) == 0 {
+		c.String(http.StatusUnauthorized, "cannot revoke api key")
+		c.Abort()
+	}
+
+	apiKey := RandomString()
+	hash, err := bcrypt.GenerateFromPassword([]byte(apiKey), config.HashCost)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Could not complete authorization: something went wrong creating the token")
+		c.Error(err)
+		c.Abort()
+		return
+	}
+
+	token.APIKeyHash = hash
+	db.Save(token)
+
+	c.HTML(http.StatusOK, "token.html", gin.H{
+		"name": token.Name,
+		"id":   token.ID,
+		"key":  apiKey,
+	})
+}
+
+func DeleteToken(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+
+	db.Delete(Token{
+		UserID: user.ID,
+		ID:     c.Param("id"),
+	})
 }

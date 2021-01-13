@@ -1,13 +1,12 @@
 package main
 
 import (
-	"encoding/base64"
 	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
 )
 
 var db *gorm.DB
@@ -53,20 +52,18 @@ type Token struct {
 	UserID string
 }
 
-func GetTokenIfValid(id, apiKey string) *Token {
-	token := new(Token)
-	db.Where("id = ?", id).First(token)
-	if token.ID == "" {
-		return nil
+func (t *Token) IntoOauth() *oauth2.Token {
+	return &oauth2.Token{
+		AccessToken:  t.AccessToken,
+		RefreshToken: t.RefreshToken,
+		Expiry:       t.Expires,
+		TokenType:    t.TokenType,
 	}
+}
 
-	apiKeyBytes, err := base64.StdEncoding.DecodeString(apiKey)
-	if err != nil {
-		return nil
-	}
-
-	if bcrypt.CompareHashAndPassword(token.APIKeyHash, apiKeyBytes) != nil {
-		return nil
-	}
-	return token
+func (t *Token) FromOauth(token *oauth2.Token) {
+	t.AccessToken = token.AccessToken
+	t.RefreshToken = token.RefreshToken
+	t.Expires = token.Expiry
+	t.TokenType = token.TokenType
 }

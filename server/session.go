@@ -47,15 +47,9 @@ func GetUserFromSession(c *gin.Context) *User {
 		return nil
 	}
 
-	session := new(Session)
-	db.First(session, Session{ID: sessionID})
-	if session.UserID == "" {
-		return nil
-	}
-
 	user := new(User)
-	db.First(user, User{ID: session.UserID})
-	if user.ID == "" {
+	db.Preload("Sessions").First(user, User{Session: Session{ID: sessionID}})
+	if user.ID == "" || user.Session.ID == "" {
 		return nil
 	}
 

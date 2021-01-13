@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,14 +10,52 @@ import (
 	oauthSpotify "golang.org/x/oauth2/spotify"
 )
 
-func OauthClient() *oauth2.Config {
+func RegisterAPI(r gin.IRouter) {
+	r.GET("/login", Login)
+	r.GET("/spotify_callback", SpotifyCallback)
+	r.GET("/token", GetToken)
+}
+
+func OauthClient(scopes ...string) *oauth2.Config {
+	if len(scopes) == 0 {
+		scopes = append(scopes, "user-read-private")
+	}
 	return &oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
 		RedirectURL:  config.ClientRedirectURL,
 		Endpoint:     oauthSpotify.Endpoint,
-		Scopes:       []string{"user-read-private"},
+		Scopes:       scopes,
 	}
+}
+
+func GetToken(c *gin.Context) {
+	tokenID, apiKey, ok := c.Request.BasicAuth()
+	if !ok {
+		c.String(http.StatusUnauthorized, "request must have basic auth")
+		c.Abort()
+	}
+
+	apiKeyBytes, err := base64.StdEncoding.DecodeString(apiKey)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "invalid auth")
+		c.Abort()
+	}
+
+	token := new(Token)
+	db.First(token, Token{ID: tokenID})
+	if token.ID == "" {
+		c.String(http.StatusUnauthorized, "invalid auth")
+		c.Abort()
+	}
+
+	if bcrypt.CompareHashAndPassword(token.APIKeyHash, apiKeyBytes) != nil {
+		c.String(http.StatusUnauthorized, "invalid auth")
+		c.Abort()
+	}
+
+	oauthToken := token.IntoOauth()
+	c.String(http.StatusOK, oauthToken.Type()+" "+oauthToken.AccessToken)
 }
 
 func Login(c *gin.Context) {
@@ -90,10 +129,7 @@ func CreateToken(c *gin.Context, code, tokenID string) {
 	}
 
 	token.APIKeyHash = hash
-	token.AccessToken = oauthToken.AccessToken
-	token.RefreshToken = oauthToken.RefreshToken
-	token.Expires = oauthToken.Expiry
-	token.TokenType = oauthToken.TokenType
+	token.FromOauth(oauthToken)
 	db.Save(token)
 
 	c.HTML(http.StatusOK, "token.html", gin.H{
