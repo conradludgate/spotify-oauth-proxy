@@ -49,7 +49,14 @@ func GetToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, token.IntoOauth())
+	t, err := Refresh(c, token.IntoOauth())
+	if err != nil {
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "invalid token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, t)
 }
 
 func Login(c *gin.Context) {

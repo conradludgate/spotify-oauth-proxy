@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"time"
+
+	"golang.org/x/oauth2"
 )
 
 func RefreshJob() {
@@ -40,4 +42,8 @@ func RefreshJob() {
 			}
 		}
 	}()
+}
+
+func Refresh(ctx context.Context, t *oauth2.Token) (*oauth2.Token, error) {
+	return OauthClient().TokenSource(ctx, t).Token()
 }
