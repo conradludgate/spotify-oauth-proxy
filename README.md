@@ -2,6 +2,10 @@
 
 Managed OAuth access for your spotify account
 
+## WARNING
+
+This project is unmaintained. Please go to https://github.com/conradludgate/oauth2-proxy for the newer project
+
 ## How it works
 
 1)  Go to https://spotify.conradludgate.com/login
